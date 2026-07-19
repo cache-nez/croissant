@@ -3,7 +3,9 @@ Claude MCP Client
 
 Client that connects Claude to the Eclair MCP Server.
 """
-from ..llm import LlmMcpClient, Provider
+import json
+
+from ..llm import LlmMcpClient, Provider, ToolCall
 
 try:
     import anthropic
@@ -34,21 +36,54 @@ class ClaudeMCPClient(LlmMcpClient):
         else:
             print("No Claude API key found. Only MCP functionality will be available.")
 
-    async def _generate(self, user_prompt: str, temperature: float) -> str:
-        """Generate a response with Claude."""
-        try:
-            full_prompt = self._build_prompt(user_prompt)
-            response = self.llm_client.messages.create(
-                model=self.model_name,
-                max_tokens=self.max_tokens,
-                temperature=temperature,
-                system=self.system_prompt,
-                messages=[{"role": "user", "content": full_prompt}],
-            )
-            return response.content[0].text
+    def _convert_tools(self, mcp_tools):
+        """Convert MCP tools to Anthropic tool definitions."""
+        return [
+            {
+                "name": tool.name,
+                "description": tool.description or "",
+                "input_schema": tool.inputSchema,
+            }
+            for tool in mcp_tools
+        ]
 
-        except Exception as e:
-            return f"⚠️ Claude API error: {e}"
+    def _init_history(self, prompt: str):
+        return [{"role": "user", "content": prompt}]
+
+    def _generate_turn(self, history, tools, temperature: float):
+        return self.llm_client.messages.create(
+            model=self.model_name,
+            max_tokens=self.max_tokens,
+            temperature=temperature,
+            system=self.system_prompt,
+            tools=tools,
+            messages=history,
+        )
+
+    def _parse_tool_calls(self, response) -> list[ToolCall]:
+        return [
+            ToolCall(id=block.id, name=block.name, arguments=block.input)
+            for block in response.content
+            if block.type == "tool_use"
+        ]
+
+    def _final_text(self, response) -> str:
+        return "".join(block.text for block in response.content if block.type == "text")
+
+    def _append_turn(self, history, response, results):
+        # Echo the assistant's tool-use turn, then answer with tool_result blocks.
+        history.append({"role": "assistant", "content": response.content})
+        history.append({
+            "role": "user",
+            "content": [
+                {
+                    "type": "tool_result",
+                    "tool_use_id": call.id,
+                    "content": json.dumps(self._result_payload(result)),
+                }
+                for call, result in results
+            ],
+        })
 
 
 # Example usage (only if running this file directly)
