@@ -45,7 +45,7 @@ async def async_main():
             if not args.query:
                 print("Error: --query required for ask command")
                 return
-            response = await client.ask_gemini_with_tools(args.query)
+            response = await client.ask_llm_with_tools(args.query)
             print(response)
         else:
             # Call MCP tool directly
@@ -71,7 +71,7 @@ async def async_main():
             if not args.query:
                 print("Error: --query required for ask command")
                 return
-            response = await client.ask_claude_with_tools(args.query)
+            response = await client.ask_llm_with_tools(args.query)
             print(response)
         else:
             # Call MCP tool directly

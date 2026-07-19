@@ -239,13 +239,13 @@ class EclairMCPTester:
     
     async def test_gemini_integration(self):
         """Test Gemini integration if API key is available."""
-        if not self.client.gemini_client:
+        if not self.client.llm_client:
             print("⚠️ Skipping Gemini test - no API key available")
             return None
             
         print("🤖 Testing Gemini integration...")
         try:
-            response = await self.client.ask_gemini_with_tools(
+            response = await self.client.ask_llm_with_tools(
                 "Search for datasets about image classification, and tell me about the top 3 results"
             )
             print(f"✅ Gemini response received")

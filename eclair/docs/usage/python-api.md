@@ -494,7 +494,7 @@ async def ai_assistant():
     await client.initialize()
     
     # Let Gemini understand and execute complex requests
-    response = await client.ask_gemini_with_tools(
+    response = await client.ask_llm_with_tools(
         "Find me datasets on tree covertype in national forests in the USA"
         "and tell me which one has the best information on tree coverage at different elevations."
     )
@@ -549,7 +549,7 @@ async def smart_dataset_workflow():
     await client.initialize()
     
     # Complex dataset analysis and recommendation
-    recommendation = await client.ask_gemini_with_tools("""
+    recommendation = await client.ask_llm_with_tools("""
         I need to build a model for recognizing handwritten digits. 
         Please:
         1. Find suitable datasets for this task
@@ -700,7 +700,7 @@ nest_asyncio.apply()  # Required for Jupyter async support
 from eclair.client import EclairClient
 
 # Now you can use await directly in cells
-client = EclairClient(server_url="http://localhost:3000")
+client = EclairClient(mcp_server_url="http://localhost:3000")
 result = await client.search_datasets("image classification")
 datasets = result.structured_content['result']
 
