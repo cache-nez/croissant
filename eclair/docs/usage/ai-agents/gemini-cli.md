@@ -78,7 +78,10 @@ cp src/eclair/client/gemini/gemini.md ./GEMINI.md
 
 ```bash
 # Check if server is running
-curl http://localhost:8080/mcp/health
+curl -s -X POST http://localhost:8080/mcp \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"curl","version":"0"}}}'
 
 # If not running, start it
 eclair-server
@@ -155,8 +158,7 @@ Gemini can continue the analysis by:
 
 **"No MCP servers available"**
 
-- Check that Eclair server is running: `curl http://localhost:8080/mcp`
-   - Note: the Eclair server actually binds to `http://0.0.0.0:8080/mcp`
+- Check that Eclair server is running: see the `curl` command above
 - Verify the `~/.gemini/settings.json` configuration
 - Restart Gemini CLI
 

@@ -1,13 +1,14 @@
 #!/bin/bash
 
-# Eclair dataset server quickstart script for development
+# Eclair dataset server quickstart script for development.
+#
+# Sets up the environment (see install.sh), then launches the server.
 set -e
 
-# Install in development mode if not already installed
-if ! command -v eclair-server &> /dev/null; then
-    echo "Installing Eclair in development mode..."
-    pip install -e .
-fi
+# Set up uv and the project environment.
+"$(dirname "$0")/install.sh"
 
-# Start the server
-eclair-server --host 0.0.0.0 --port 8080 --transport streamable-http
+# Launch the server in that environment.
+# Note: while the server is bound to 0.0.0.0, clients should connect to 127.0.0.1 or localhost
+# because MCP SDK's transport-security layer does not allow 0.0.0.0
+uv run eclair-server --host 0.0.0.0 --port 8080 --transport streamable-http
