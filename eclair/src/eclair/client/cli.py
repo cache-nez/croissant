@@ -36,7 +36,7 @@ async def async_main():
     
     if args.use_gemini:
         if not GEMINI_AVAILABLE:
-            print("Error: Gemini not available. Install with: pip install google-generativeai")
+            print("Error: Gemini not available. Install with: pip install google-genai")
             return
         client = GeminiMCPClient(args.server_url)
         await client.initialize()
