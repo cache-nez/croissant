@@ -15,55 +15,52 @@ pip install eclair
 
 ## Development Installation
 
-For the latest features or if you want to contribute to Eclair:
-
-Clone the Repository
+For the latest features or if you want to contribute to Eclair. Clone the repository first:
 
 ```bash
 git clone https://github.com/mlcommons/croissant.git
 cd eclair
 ```
 
-Install Dependencies
+### Setup script (recommended)
+
+`install.sh` uses [uv](https://docs.astral.sh/uv/) to provision a compatible Python (3.10+) and an isolated environment automatically, regardless of your system Python version. It offers to install uv if it's missing.
 
 ```bash
-pip install -r requirements.txt
+./install.sh
 ```
 
-Install in Development Mode
-
-```bash
-pip install -e .
-```
-
-Install Development Tools (Optional). For development with additional tools like testing and linting:
-
-```bash
-pip install -e .[dev]
-```
-
-You should now be able to run the Eclair server:
-
-```bash
-eclair-server
-```
-
-## Quick Start Script
-
-Eclair includes a convenient setup script:
+To set up **and** start the server in one step, use `start.sh` instead:
 
 ```bash
 ./start.sh
 ```
 
-This script will:
+<img src="../images/eclair-screen.png" alt="Eclair Diagram" style="max-width: 500px; height: auto;"/>
 
-- Install all required dependencies
-- Set up the development environment  
-- Start the Eclair server automatically
+### Manual with uv
 
+The same steps, run yourself:
 
-<img src="../../images/eclair-screen.png" alt="Eclair Diagram" style="max-width: 500px; height: auto;"/>
+```bash
+uv sync                 # create the venv and install Eclair + dependencies
+uv run eclair-server    # start the server
+```
+
+Add development tools (testing, linting) with `uv sync --extra dev`.
+
+### Manual with pip
+
+If you already have Python 3.10+ and prefer pip:
+
+```bash
+pip install -r requirements.txt
+pip install -e .
+eclair-server
+```
+
+NOTE:
+Unless you activate a virtual environment first, this installs Eclair and its dependencies into your global Python environment. The uv-based methods above keep everything in an isolated project venv.
 
 
 ## Configuration
@@ -151,7 +148,7 @@ For step by step instructions, see the [Gemini CLI user guide](../usage/ai-agent
 
 Register the server:
 ```bash
-claude mcp add --transport http Eclair http://0.0.0.0:8080/mcp
+claude mcp add --transport http Eclair http://127.0.0.1:8080/mcp
 ```
 
 For step by step instructions, see the [Claude Code user guide](../usage/ai-agents/claude-code.md).

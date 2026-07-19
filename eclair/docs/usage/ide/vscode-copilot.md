@@ -36,7 +36,7 @@ Register Eclair as an MCP server in VS Code:
 2. Press `Ctrl+Shift+P` (or `Cmd+Shift+P` on Mac)
 3. Type `>mcp` and select **"MCP: Add Server"**
 4. Choose **HTTP** as the transport type
-5. Enter URL: `http://0.0.0.0:8080/mcp`
+5. Enter URL: `http://127.0.0.1:8080/mcp`
 6. Set ID: `Eclair`
 7. Choose **Global** or **Workspace** scope
 
@@ -46,7 +46,7 @@ VS Code may open an `mcp.json` file to confirm the configuration:
 {
   "mcpServers": {
     "Eclair": {
-      "httpUrl": "http://0.0.0.0:8080/mcp",
+      "httpUrl": "http://127.0.0.1:8080/mcp",
       "timeout": 5000
     }
   }
@@ -121,7 +121,7 @@ Copilot concludes with a summary and suggestions:
 
 **"MCP server not found"**
 
-- Verify Eclair server is running: `curl http://localhost:8080/mcp`
+- Verify Eclair server is running: see debug step below
 - Check MCP extension is installed and enabled
 - Restart VS Code
 
@@ -154,7 +154,10 @@ Copilot concludes with a summary and suggestions:
 
 2. **Test Eclair Connection**:
    ```bash
-   curl http://0.0.0.0:8080/mcp/health
+   curl -s -X POST http://localhost:8080/mcp \
+     -H "Content-Type: application/json" \
+     -H "Accept: application/json, text/event-stream" \
+     -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"curl","version":"0"}}}'
    ```
 
 3. **Restart Components**:

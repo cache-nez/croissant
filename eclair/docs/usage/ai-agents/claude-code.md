@@ -35,7 +35,7 @@ Follow the prompts to link your Anthropic account, then exit with Ctrl-C.
 Add Eclair as an MCP server to Claude Code:
 
 ```bash
-claude mcp add --transport http Eclair http://0.0.0.0:8080/mcp
+claude mcp add --transport http Eclair http://127.0.0.1:8080/mcp
 ```
 
 This command:
@@ -73,7 +73,10 @@ You should see Eclair in the list of available MCP servers.
 
 ```bash
 # Check server status
-curl http://localhost:8080/mcp/health
+curl -s -X POST http://localhost:8080/mcp \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"curl","version":"0"}}}'
 
 # Start if not running
 eclair-server
@@ -182,9 +185,12 @@ Verify your setup:
 claude mcp list
 
 # Check Eclair connection
-curl http://0.0.0.0:8080/mcp
+curl -s -X POST http://localhost:8080/mcp \
+  -H "Content-Type: application/json" \
+  -H "Accept: application/json, text/event-stream" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"curl","version":"0"}}}'
 
 # Remove and re-add if needed
 claude mcp remove Eclair
-claude mcp add --transport http Eclair http://0.0.0.0:8080/mcp
+claude mcp add --transport http Eclair http://127.0.0.1:8080/mcp
 ```

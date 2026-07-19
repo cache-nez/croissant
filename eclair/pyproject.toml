@@ -43,6 +43,8 @@ dependencies = [
     "google-generativeai>=0.8.0",
     "mcp>=1.1.0",
     "python-dotenv>=1.0.0",
+    "mlcroissant>=1.0.21",
+    "func_timeout>=4.3.0",
 ]
 
 [project.optional-dependencies]

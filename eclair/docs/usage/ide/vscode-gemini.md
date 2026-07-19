@@ -159,7 +159,7 @@ Gemini maintains context about:
 **"MCP servers not loaded"**
 
 - Ensure `~/.gemini/settings.json` is properly configured
-- Verify Eclair server is running: `curl http://localhost:8080/mcp`
+- Verify Eclair server is running: see debug step below
 - Restart VS Code and check Agentic mode is enabled
 
 **"API key not found"**
@@ -184,7 +184,10 @@ Gemini maintains context about:
 
 1. **Verify Eclair Connection**:
    ```bash
-   curl http://localhost:8080/mcp/health
+   curl -s -X POST http://localhost:8080/mcp \
+     -H "Content-Type: application/json" \
+     -H "Accept: application/json, text/event-stream" \
+     -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"curl","version":"0"}}}'
    eclair-client --tool ping
    ```
 
