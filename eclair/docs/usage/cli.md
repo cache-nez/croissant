@@ -25,7 +25,7 @@ eclair-client --help
 ```
 
 ```
-Usage: eclair-client [-h] [--server-url SERVER_URL] --tool TOOL [--query QUERY] [--collection COLLECTION] [--dataset DATASET] [--use-gemini] [--use-claude]
+Usage: eclair-client [-h] [--server-url SERVER_URL] --tool TOOL [--query QUERY] [--collection COLLECTION] [--dataset DATASET] [--use-gemini] [--use-claude] [--use-local]
 
 Eclair MCP Client
 
@@ -41,7 +41,8 @@ options:
   --dataset DATASET, -D DATASET
                         Dataset name
   --use-gemini, -G      Use Gemini client
-  --use-claude, -L      Use Claude client
+  --use-claude, -A      Use Claude client
+  --use-local, -L       Use local (OpenAI-compatible) client
 ```
 
 ### Examples
@@ -100,7 +101,8 @@ Overview of argments and shortcuts:
 | `--collection` | `-C` | Dataset collection |
 | `--dataset` | `-D` | Dataset name |
 | `--use-gemini` | `-G` | Use Gemini client |
-| `--use-claude` | `-L` | Use Claude client |
+| `--use-claude` | `-A` | Use Claude client |
+| `--use-local` | `-L` | Use local (OpenAI-compatible) client |
 
 
 ### Example

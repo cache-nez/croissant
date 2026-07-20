@@ -33,8 +33,8 @@ async def async_main() -> None:
     parser.add_argument("--collection", "-C", help="Dataset collection")
     parser.add_argument("--dataset", "-D", help="Dataset name")
     parser.add_argument("--use-gemini", "-G", action="store_true", help="Use Gemini client")
-    parser.add_argument("--use-claude", "-L", action="store_true", help="Use Claude client")
-    parser.add_argument("--use-local", "-O", action="store_true", help="Use local (OpenAI-compatible) client")
+    parser.add_argument("--use-claude", "-A", action="store_true", help="Use Claude client")
+    parser.add_argument("--use-local", "-L", action="store_true", help="Use local (OpenAI-compatible) client")
     args = parser.parse_args()
 
     # Check for mutually exclusive options
