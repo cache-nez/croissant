@@ -18,39 +18,39 @@ cd croissant/eclair
 
 3. Run an OpenAI-compatible LLM locally on port 11434 (update config.json with the model name and an alternative port, if using). I used qwen3-1.7b on llama.cpp:
 
-  1. llama.cpp installation (optional, replace by provider of your choice):
+   1. llama.cpp installation (optional, replace by provider of your choice):
 
-  ```
-  brew install llama.cpp
-  ```
+   ```
+   brew install llama.cpp
+   ```
 
-  or
+   or
 
-  ```
-  conda install -c conda-forge llama.cpp
-  ```
+   ```
+   conda install -c conda-forge llama.cpp
+   ```
 
-  2. Run llama.cpp or replace with a provider and model of your choice:
+   2. Run llama.cpp or replace with a provider and model of your choice:
 
-  ```
-  llama-server -hf unsloth/Qwen3-1.7B-GGUF:Q4_K_M --port 11434
-  ```
+   ```
+   llama-server -hf unsloth/Qwen3-1.7B-GGUF:Q4_K_M --port 11434
+   ```
 
 4. Run the client that bridges the MCP server and the local model! You have two options:
 
-  1. Run a query with `eclair-client` (source: `cli.py`):
+   1. Run a query with `eclair-client` (source: `cli.py`):
 
-  ```
-  uv run eclair-client --use-local --tool ask --query "find datasets that include age"
-  ```
+   ```
+   uv run eclair-client --use-local --tool ask --query "find datasets that include age"
+   ```
 
-  2. Debug mode: run `local/client.py` to see the debug logs, including the exchange with the LLM and tools called:
+   2. Debug mode: run `local/client.py` to see the debug logs, including the exchange with the LLM and tools called:
 
-  ```
-  uv run python -m eclair.client.local.client
-  ```
+   ```
+   uv run python -m eclair.client.local.client
+   ```
 
-  If you prefer Gemini, run `uv run python -m eclair.client.gemini.client` or `uv run eclair-client --use-gemini --tool ask --query "find datasets that include age"`. You need to provide `GEMINI_API_KEY` either in an `.env` file or prepend it to the command (`GEMINI_API_KEY=mykey uv run ...`). Analogous for Claude.
+   If you prefer Gemini, run `uv run python -m eclair.client.gemini.client` or `uv run eclair-client --use-gemini --tool ask --query "find datasets that include age"`. You need to provide `GEMINI_API_KEY` either in an `.env` file or prepend it to the command (`GEMINI_API_KEY=mykey uv run ...`). Analogous for Claude.
 
 
 ## Scope of this project
