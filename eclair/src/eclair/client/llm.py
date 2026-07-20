@@ -6,11 +6,14 @@ Shared base class for clients that pair an Eclair MCP server with an LLM.
 
 import inspect
 import json
+import logging
 import os
 from dataclasses import dataclass
 from enum import Enum
 
 from .client import EclairClient
+
+logger = logging.getLogger(__name__)
 
 # Load environment variables from a .env file, if present, before any client is
 # constructed (so os.getenv picks up .env-defined API keys). Falls back to the
@@ -158,18 +161,38 @@ class LlmMcpClient(EclairClient):
             raise ValueError(f"{self.PROVIDER.config_key.title()} client not available (no API key)")
 
         temp = temperature if temperature is not None else self.default_temperature
+        provider = self.PROVIDER.config_key
+        logger.info(
+            "Starting tool-call loop (provider=%s, model=%s, temperature=%s)",
+            provider, self.model_name, temp,
+        )
         async with self.mcp_client:
             tools = await self._get_tools()
             history = self._initial_history(prompt)
+            turn = 0
             while True:
+                turn += 1
+                logger.info("Turn %d: requesting completion from %s", turn, provider)
+                logger.debug("Turn %d: history=%s", turn, history)
                 llm_response = self._generate_turn(history, tools, temp)
+                logger.debug("Turn %d: response=%s", turn, llm_response)
                 tool_calls = self._parse_tool_calls(llm_response)
                 if not tool_calls:
+                    logger.info("Returning final answer after %d turn(s)", turn)
                     return self._parse_final_text(llm_response)
 
+                logger.info(
+                    "Turn %d: LLM requested %d tool call(s): %s",
+                    turn, len(tool_calls), ", ".join(c.name for c in tool_calls),
+                )
                 tool_results = []
                 for call in tool_calls:
-                    result = await self.mcp_client.call_tool(call.name, call.arguments)
+                    logger.info("Calling tool %s (id=%s)", call.name, call.id)
+                    try:
+                        result = await self.mcp_client.call_tool(call.name, call.arguments)
+                    except Exception:
+                        logger.exception("Tool %s (id=%s) raised an error", call.name, call.id)
+                        raise
                     tool_results.append((call, result))
                 self._append_turn(history, llm_response, tool_results)
 
