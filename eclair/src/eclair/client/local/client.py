@@ -7,6 +7,7 @@ OpenAI-compatible API (Ollama, vLLM, LM Studio, llama.cpp, LiteLLM, ...).
 import json
 
 from ..llm import LlmMcpClient, Provider, ToolCall
+from ..llm import logger as loop_logger
 
 try:
     from openai import OpenAI
@@ -98,17 +99,34 @@ class LocalMCPClient(LlmMcpClient):
 
 # Example usage (only if running this file directly)
 if __name__ == "__main__":
+    import argparse
     import asyncio
+    import logging
+
+    parser = argparse.ArgumentParser(description="Run the local MCP client")
+    parser.add_argument(
+        "--log-level",
+        default="debug",
+        choices=["debug", "info", "warning", "error", "critical"],
+        help="Logging level for the tool-call loop (default: debug)",
+    )
+    cli_args = parser.parse_args()
+
+    # Configure only the tool-call loop's logger, so third-party libraries
+    # (httpcore, openai, ...) keep their default level instead of flooding
+    # the output. basicConfig would target the root logger and enable everything.
+    handler = logging.StreamHandler()
+    handler.setFormatter(logging.Formatter("%(levelname)s:%(name)s:%(message)s"))
+    loop_logger.setLevel(getattr(logging, cli_args.log_level.upper()))
+    loop_logger.addHandler(handler)
 
     async def main():
         try:
             client = LocalMCPClient()
             await client.initialize()
 
-            # Example: Search for datasets
-            print("Searching for image datasets...")
-            results = await client.search_datasets("image classification")
-            print(f"Found datasets: {results}")
+            results = await client.ask_llm_with_tools("check if Eclair server is up")
+            print(f"{results}")
 
             await client.close()
         except ImportError as e:
