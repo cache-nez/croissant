@@ -39,7 +39,7 @@ titanic and simple-parquet.
 From the `eclair/` directory:
 
 ```bash
-./src/eclair/server/stub/start_stub.sh     # sets up the uv env, then serves
+./start_stub.sh     # sets up the uv env, then serves
 # or directly:
 uv run python src/eclair/server/stub/jetty_stub.py
 ```
