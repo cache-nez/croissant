@@ -7,7 +7,7 @@
     "transport": "streamable-http"
   },
   "upstream_server": {
-    "url": "https://mcp.jetty.io/mcp",
+    "url": "http://127.0.0.1:9090/mcp",
     "timeout": 5000
   },
   "gemini": {

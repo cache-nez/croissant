@@ -81,6 +81,12 @@ class MCPRelay:
 
 def _load_config():
     """Load configuration from config.json."""
+    # Allow overriding the upstream server URL without editing config.json
+    # (e.g. tests pointing the relay at a stub on a non-default port).
+    env_url = os.environ.get("ECLAIR_UPSTREAM_URL")
+    if env_url:
+        logger.info(f"Using upstream server URL from ECLAIR_UPSTREAM_URL: {env_url}")
+        return env_url
     config_path = os.path.join(os.path.dirname(__file__), "..", "..", "..", "config.json")
     try:
         with open(config_path, 'r') as config_file:
