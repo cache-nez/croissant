@@ -32,13 +32,32 @@ class GeminiMCPClient(LlmMcpClient):
         else:
             print("No Gemini API key found. Only MCP functionality will be available.")
 
+    # JSON-Schema keywords that Eclair MCP servers emits but Gemini's function
+    # declaration schema (an OpenAPI 3.0 subset) rejects. Left in place they
+    # trigger a 400 INVALID_ARGUMENT from the API.
+    _UNSUPPORTED_SCHEMA_KEYS = frozenset(
+        {"additionalProperties", "$schema", "$defs", "$ref", "$id", "definitions"}
+    )
+
+    def _sanitize_schema(self, schema):
+        """Recursively drop schema keywords Gemini's tool schema doesn't accept."""
+        if isinstance(schema, dict):
+            return {
+                key: self._sanitize_schema(value)
+                for key, value in schema.items()
+                if key not in self._UNSUPPORTED_SCHEMA_KEYS
+            }
+        if isinstance(schema, list):
+            return [self._sanitize_schema(item) for item in schema]
+        return schema
+
     def _mcp_tools_to_provider_format(self, mcp_tools) -> list[types.Tool]:
         """Wrap MCP tools as a single Gemini Tool of function declarations."""
         declarations = [
             types.FunctionDeclaration(
                 name=tool.name,
                 description=tool.description or "",
-                parameters=tool.inputSchema,
+                parameters=self._sanitize_schema(tool.inputSchema),
             )
             for tool in mcp_tools
         ]
