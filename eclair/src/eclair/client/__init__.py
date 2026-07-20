@@ -22,4 +22,9 @@ try:
 except Exception:
     ClaudeMCPClient = None
 
-__all__ = ["EclairClient", "GeminiMCPClient", "ClaudeMCPClient"]
+try:
+    from .local import LocalMCPClient
+except ImportError:
+    LocalMCPClient = None
+
+__all__ = ["EclairClient", "GeminiMCPClient", "ClaudeMCPClient", "LocalMCPClient"]

@@ -16,6 +16,13 @@ except ImportError:
     ClaudeMCPClient = None
     CLAUDE_AVAILABLE = False
 
+try:
+    from .local import LOCAL_AVAILABLE
+    from .local import LocalMCPClient
+except ImportError:
+    LocalMCPClient = None
+    LOCAL_AVAILABLE = False
+
 
 async def async_main() -> None:
     """Async CLI entry point for the Eclair client."""
@@ -26,14 +33,15 @@ async def async_main() -> None:
     parser.add_argument("--collection", "-C", help="Dataset collection")
     parser.add_argument("--dataset", "-D", help="Dataset name")
     parser.add_argument("--use-gemini", "-G", action="store_true", help="Use Gemini client")
-    parser.add_argument("--use-claude", "-L", action="store_true", help="Use Claude client")
+    parser.add_argument("--use-claude", "-A", action="store_true", help="Use Claude client")
+    parser.add_argument("--use-local", "-L", action="store_true", help="Use local (OpenAI-compatible) client")
     args = parser.parse_args()
-    
+
     # Check for mutually exclusive options
-    if args.use_gemini and args.use_claude:
-        print("Error: Cannot use both --use-gemini and --use-claude at the same time")
+    if sum([args.use_gemini, args.use_claude, args.use_local]) > 1:
+        print("Error: Choose at most one of --use-gemini, --use-claude, --use-local")
         return
-    
+
     if args.use_gemini:
         if not GEMINI_AVAILABLE:
             print("Error: Gemini not available. Install with: pip install google-genai")
@@ -88,6 +96,32 @@ async def async_main() -> None:
                 print(result)
             else:
                 print(f"Tool '{args.tool}' not implemented for Claude client yet")
+
+    elif args.use_local:
+        if not LOCAL_AVAILABLE:
+            print("Error: Local client not available. Install with: pip install openai")
+            return
+        client = LocalMCPClient(args.server_url)
+        await client.initialize()
+
+        if args.tool == "ask":
+            if not args.query:
+                print("Error: --query required for ask command")
+                return
+            response = await client.ask_llm_with_tools(args.query)
+            print(response)
+        else:
+            # Call MCP tool directly
+            arguments = {}
+            if args.query:
+                arguments["query"] = args.query
+            if args.collection:
+                arguments["collection"] = args.collection
+            if args.dataset:
+                arguments["dataset"] = args.dataset
+
+            result = await client.call_mcp_tool(args.tool, arguments)
+            print(result)
     else:
         client = EclairClient(args.server_url)
         await client.initialize()

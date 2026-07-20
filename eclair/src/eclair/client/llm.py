@@ -35,6 +35,7 @@ class Provider(Enum):
 
     GEMINI = ("gemini", "GEMINI_API_KEY", "gemini.md")
     CLAUDE = ("claude", "CLAUDE_API_KEY", "claude.md")
+    LOCAL = ("local", "OPENAI_API_KEY", "local.md")
 
     def __init__(self, config_key: str, env_var: str, system_prompt_file: str) -> None:
         self.config_key = config_key
