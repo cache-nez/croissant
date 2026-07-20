@@ -41,7 +41,7 @@ class LocalMCPClient(LlmMcpClient):
         """
         self.llm_client = OpenAI(base_url=self.base_url, api_key=self.api_key or "not-needed")
 
-    def _convert_tools(self, mcp_tools):
+    def _mcp_tools_to_provider_format(self, mcp_tools):
         """Convert MCP tools to OpenAI function-tool definitions."""
         return [
             {
@@ -55,7 +55,7 @@ class LocalMCPClient(LlmMcpClient):
             for tool in mcp_tools
         ]
 
-    def _init_history(self, prompt: str):
+    def _initial_history(self, prompt: str):
         # OpenAI has no separate system field; the system prompt is the first message.
         return [
             {"role": "system", "content": self.system_prompt},
@@ -70,8 +70,8 @@ class LocalMCPClient(LlmMcpClient):
             temperature=temperature,
         )
 
-    def _parse_tool_calls(self, response) -> list[ToolCall]:
-        message = response.choices[0].message
+    def _parse_tool_calls(self, llm_response) -> list[ToolCall]:
+        message = llm_response.choices[0].message
         return [
             ToolCall(
                 id=call.id,
@@ -82,13 +82,13 @@ class LocalMCPClient(LlmMcpClient):
             for call in (message.tool_calls or [])
         ]
 
-    def _final_text(self, response) -> str:
+    def _parse_final_text(self, llm_response) -> str:
         # content is None on a tool-only turn.
-        return response.choices[0].message.content or ""
+        return llm_response.choices[0].message.content or ""
 
-    def _append_turn(self, history, response, results):
+    def _append_turn(self, history, llm_response, results):
         # Echo the assistant's tool-call turn, then answer with one tool message per call.
-        history.append(response.choices[0].message.model_dump(exclude_none=True))
+        history.append(llm_response.choices[0].message.model_dump(exclude_none=True))
         for call, result in results:
             history.append({
                 "role": "tool",
