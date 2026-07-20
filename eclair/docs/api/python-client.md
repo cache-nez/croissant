@@ -144,7 +144,7 @@ async def main():
     await client.initialize()
     
     # Ask AI assistant to find and analyze datasets
-    response = await client.ask_gemini_with_tools(
+    response = await client.ask_llm_with_tools(
         "Find fashion-related datasets and recommend the best one for image classification"
     )
     print(response)
@@ -159,17 +159,18 @@ asyncio.run(main())
 #### Constructor
 ```python
 GeminiMCPClient(
-    mcp_server_url: str = "http://localhost:8080/mcp",
-    gemini_api_key: Optional[str] = None
+    mcp_server_url: str = "http://localhost:8080/mcp"
 )
 ```
 
+The Gemini API key is read from the `GEMINI_API_KEY` environment variable or the `.env` file.
+
 #### AI Methods
 
-##### ask_gemini_with_tools(prompt: str, temperature: Optional[float] = None)
+##### ask_llm_with_tools(prompt: str, temperature: float | None = None)
 Use Gemini AI with MCP tools for intelligent responses.
 ```python
-response = await client.ask_gemini_with_tools(
+response = await client.ask_llm_with_tools(
     "Compare MNIST variants and suggest the best for my computer vision project",
     temperature=0.3
 )
@@ -225,7 +226,7 @@ async def main():
         print("Search completed")
         
         # AI features coming soon
-        # response = await client.ask_claude_with_tools("Find datasets...")
+        # response = await client.ask_llm_with_tools("Find datasets...")
         
         await client.close()
     except ImportError as e:
@@ -269,7 +270,7 @@ async def ai_analysis():
     await client.initialize()
     
     # Let AI find and analyze datasets
-    response = await client.ask_gemini_with_tools("""
+    response = await client.ask_llm_with_tools("""
     I need datasets for a computer vision project about clothing classification.
     Find relevant datasets and analyze their characteristics.
     Recommend the best option with reasoning.

@@ -36,7 +36,7 @@ async def async_main():
     
     if args.use_gemini:
         if not GEMINI_AVAILABLE:
-            print("Error: Gemini not available. Install with: pip install google-generativeai")
+            print("Error: Gemini not available. Install with: pip install google-genai")
             return
         client = GeminiMCPClient(args.server_url)
         await client.initialize()
@@ -45,7 +45,7 @@ async def async_main():
             if not args.query:
                 print("Error: --query required for ask command")
                 return
-            response = await client.ask_gemini_with_tools(args.query)
+            response = await client.ask_llm_with_tools(args.query)
             print(response)
         else:
             # Call MCP tool directly
@@ -71,7 +71,7 @@ async def async_main():
             if not args.query:
                 print("Error: --query required for ask command")
                 return
-            response = await client.ask_claude_with_tools(args.query)
+            response = await client.ask_llm_with_tools(args.query)
             print(response)
         else:
             # Call MCP tool directly
