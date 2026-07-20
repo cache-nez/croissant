@@ -33,9 +33,10 @@ logger = logging.getLogger("jetty_stub")
 
 # --- Server binding -------------------------------------------------------
 # Bind to 127.0.0.1 (not 0.0.0.0): the MCP SDK transport-security layer rejects
-# 0.0.0.0 clients. Port 9090 avoids Eclair's own 8080.
-HOST = "127.0.0.1"
-PORT = 9090
+# 0.0.0.0 clients. Port 9090 avoids Eclair's own 8080. Both are overridable via
+# JETTY_STUB_HOST / JETTY_STUB_PORT (e.g. so tests can avoid the default ports).
+HOST = os.environ.get("JETTY_STUB_HOST", "127.0.0.1")
+PORT = int(os.environ.get("JETTY_STUB_PORT", "9090"))
 
 
 def _find_datasets_dir() -> str:

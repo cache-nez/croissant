@@ -44,7 +44,8 @@ From the `eclair/` directory:
 uv run python src/eclair/server/stub/jetty_stub.py
 ```
 
-The stub serves `http://127.0.0.1:9090/mcp`.
+The stub serves `http://127.0.0.1:9090/mcp`. Override the bind address with
+`JETTY_STUB_HOST` / `JETTY_STUB_PORT` if those defaults are taken.
 
 ## Wire Eclair to the stub
 
@@ -59,6 +60,13 @@ The stub serves `http://127.0.0.1:9090/mcp`.
 
 Start the stub (above), then start Eclair (`./start.sh`). Eclair's relayed tools will
 return the hardcoded answers with no network call to `mcp.jetty.io`.
+
+Alternatively, leave `config.json` alone and point the relay at the stub for a single
+run with the `ECLAIR_UPSTREAM_URL` env var, which overrides `upstream_server.url`:
+
+```bash
+ECLAIR_UPSTREAM_URL=http://127.0.0.1:9090/mcp ./start.sh
+```
 
 ### Revert to the real Jetty server
 
