@@ -17,7 +17,7 @@ except ImportError:
     CLAUDE_AVAILABLE = False
 
 
-async def async_main():
+async def async_main() -> None:
     """Async CLI entry point for the Eclair client."""
     parser = argparse.ArgumentParser(description="Eclair MCP Client")
     parser.add_argument("--server-url", "-S", default="http://localhost:8080/mcp", help="MCP server URL")
@@ -117,7 +117,7 @@ async def async_main():
             print(f"Available tools: {list(tool_methods.keys())}")
 
 
-def main():
+def main() -> None:
     """Synchronous entry point that runs the async main function."""
     asyncio.run(async_main())
 

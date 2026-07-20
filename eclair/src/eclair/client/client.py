@@ -11,11 +11,11 @@ from fastmcp import Client
 class EclairClient:
     """Base client for interacting with Eclair MCP servers."""
 
-    def __init__(self, mcp_server_url: str = "http://localhost:8080/mcp"):
+    def __init__(self, mcp_server_url: str = "http://localhost:8080/mcp") -> None:
         self.mcp_server_url = mcp_server_url
         self.mcp_client = None
 
-    async def initialize(self):
+    async def initialize(self) -> None:
         """Initialize the MCP client."""
         self.mcp_client = Client(self.mcp_server_url)
 
@@ -59,7 +59,7 @@ class EclairClient:
         return await self.call_mcp_tool("ping")
 
 
-async def main():
+async def main() -> None:
     """Simple example of using the Eclair client."""
     client = EclairClient()
 
