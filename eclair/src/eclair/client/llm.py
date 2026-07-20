@@ -33,7 +33,7 @@ class Provider(Enum):
     GEMINI = ("gemini", "GEMINI_API_KEY", "gemini.md")
     CLAUDE = ("claude", "CLAUDE_API_KEY", "claude.md")
 
-    def __init__(self, config_key: str, env_var: str, system_prompt_file: str):
+    def __init__(self, config_key: str, env_var: str, system_prompt_file: str) -> None:
         self.config_key = config_key
         self.env_var = env_var
         self.system_prompt_file = system_prompt_file
@@ -74,7 +74,7 @@ class LlmMcpClient(EclairClient):
     # Set by each concrete subclass, e.g. PROVIDER = Provider.GEMINI.
     PROVIDER: Provider = None
 
-    def __init__(self, mcp_server_url: str = "http://localhost:8080/mcp"):
+    def __init__(self, mcp_server_url: str = "http://localhost:8080/mcp") -> None:
         super().__init__(mcp_server_url)
         # Key is resolved from the environment only (never passed in code).
         self.api_key = os.getenv(self.PROVIDER.env_var)
@@ -85,7 +85,7 @@ class LlmMcpClient(EclairClient):
         self._load_config()
         self._load_system_prompt()
 
-    def _load_config(self):
+    def _load_config(self) -> None:
         """Load model settings from the provider's section of config.json."""
         config_path = os.path.join(os.path.dirname(__file__), "..", "..", "..", "config.json")
         try:
@@ -99,7 +99,7 @@ class LlmMcpClient(EclairClient):
         self.model_name = self._provider_config.get("model")
         self.default_temperature = self._provider_config.get("temperature", 0.3)
 
-    def _load_system_prompt(self):
+    def _load_system_prompt(self) -> None:
         """Load the system prompt from the subclass package's prompt file."""
         # Resolve relative to the concrete subclass module, so gemini.md lives in
         # the gemini/ package and claude.md in the claude/ package.
@@ -116,12 +116,12 @@ class LlmMcpClient(EclairClient):
             print(f"Warning: Could not load system prompt from {self.PROVIDER.system_prompt_file}: {e}")
             self.system_prompt = _FALLBACK_SYSTEM_PROMPT
 
-    async def initialize(self):
+    async def initialize(self) -> None:
         """Initialize both the MCP client and the LLM client."""
         await super().initialize()
         self._build_llm_client()
 
-    async def close(self):
+    async def close(self) -> None:
         """Clean up resources.
 
         The MCP client is closed automatically when its context manager exits,
@@ -129,7 +129,7 @@ class LlmMcpClient(EclairClient):
         """
         pass
 
-    async def _get_tools(self):
+    async def _get_tools(self) -> list:
         """Return the provider-format tool declarations, fetching once and caching.
 
         list_tools() needs an open MCP session, so this must be called from
@@ -137,7 +137,7 @@ class LlmMcpClient(EclairClient):
         """
         if self._llm_tools is None:
             mcp_tools = await self.mcp_client.list_tools()
-            self._llm_tools = self._convert_tools(mcp_tools)
+            self._llm_tools = self._mcp_tools_to_provider_format(mcp_tools)
         return self._llm_tools
 
     def _result_payload(self, result) -> dict:
@@ -147,7 +147,7 @@ class LlmMcpClient(EclairClient):
         text = "\n".join(getattr(c, "text", str(c)) for c in (getattr(result, "content", None) or []))
         return {"result": text}
 
-    async def ask_llm_with_tools(self, prompt: str, temperature: float | None = None):
+    async def ask_llm_with_tools(self, prompt: str, temperature: float | None = None) -> str:
         """Ask the LLM to answer prompt, letting it call the MCP tools in a loop.
 
         The MCP connection is held open for the whole exchange: each turn the LLM
@@ -160,35 +160,33 @@ class LlmMcpClient(EclairClient):
         temp = temperature if temperature is not None else self.default_temperature
         async with self.mcp_client:
             tools = await self._get_tools()
-            history = self._init_history(prompt)
+            history = self._initial_history(prompt)
             while True:
-                response = self._generate_turn(history, tools, temp)
-                tool_calls = self._parse_tool_calls(response)
+                llm_response = self._generate_turn(history, tools, temp)
+                tool_calls = self._parse_tool_calls(llm_response)
                 if not tool_calls:
-                    return self._final_text(response)
+                    return self._parse_final_text(llm_response)
 
-                results = []
+                tool_results = []
                 for call in tool_calls:
-                    # Already inside the open connection, so call the transport
-                    # directly rather than the one-shot self.call_mcp_tool wrapper.
                     result = await self.mcp_client.call_tool(call.name, call.arguments)
-                    results.append((call, result))
-                self._append_turn(history, response, results)
+                    tool_results.append((call, result))
+                self._append_turn(history, llm_response, tool_results)
 
     # --- Provider-specific hooks -------------------------------------------
 
-    def _build_llm_client(self):
+    def _build_llm_client(self) -> None:
         """Construct the provider SDK client into self.llm_client.
 
         Leaves self.llm_client as None when no API key is set.
         """
         raise NotImplementedError
 
-    def _convert_tools(self, mcp_tools):
+    def _mcp_tools_to_provider_format(self, mcp_tools) -> list:
         """Convert MCP tool definitions into this provider's tool-declaration format."""
         raise NotImplementedError
 
-    def _init_history(self, prompt: str):
+    def _initial_history(self, prompt: str) -> list:
         """Return the provider's initial message history for a user prompt."""
         raise NotImplementedError
 
@@ -196,17 +194,17 @@ class LlmMcpClient(EclairClient):
         """Call the LLM for one turn and return the raw provider response."""
         raise NotImplementedError
 
-    def _parse_tool_calls(self, response) -> list[ToolCall]:
+    def _parse_tool_calls(self, llm_response) -> list[ToolCall]:
         """Return the tool calls the LLM requested this turn (empty when none)."""
         raise NotImplementedError
 
-    def _final_text(self, response) -> str:
+    def _parse_final_text(self, llm_response) -> str:
         """Extract the final text answer from a response with no tool calls."""
         raise NotImplementedError
 
-    def _append_turn(self, history, response, results):
+    def _append_turn(self, history, llm_response, tool_call_results) -> None:
         """Append the assistant's tool-call turn and the tool results to history.
 
-        results is a list of (ToolCall, CallToolResult) pairs.
+        tool_call_results is a list of (ToolCall, CallToolResult) pairs.
         """
         raise NotImplementedError
